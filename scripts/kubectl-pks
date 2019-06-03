@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# optional argument handling
+if [[ "$1" == "login" ]]
+then
+    pks login -a $2 -u $3 --skip-ssl-validation
+    exit 0
+fi
+
+# optional argument handling
+if [[ "$1" == "clusters" ]]
+then
+    pks clusters
+    exit 0
+fi
+
+optional argument handling
+if [[ "$1" == "clusters" ]]
+then
+    pks clusters
+    exit 0
+fi
+
+echo "I am a plugin named kubectl-foo"
+
