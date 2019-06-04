@@ -1,5 +1,7 @@
 #!/bin/bash
 
+brew install jq
+sudo apt-get install jq
 # optional argument handling
 if [[ "$1" == "login" ]]
 then
@@ -14,12 +16,16 @@ then
     exit 0
 fi
 
-optional argument handling
-if [[ "$1" == "clusters" ]]
+if [[ "$1" == "uuac" && "$2" = "adduser" ]]
 then
-    pks clusters
-    exit 0
+	uaac target $3
+	uaac token owner get opsman -s ""
+	auth_secret=$( curl -k  “https://opsman.flhrnet.local/api/v0/deployed/director/credentials/uaa_admin_user_credentials” -X GET -H “Authorization: Bearer <Authorization Token>”  | jq '.secret' ) 
+	uaac token client get admin -s $auth_secret
+	uaac user add pksadmin --emails $4 -p $5
+	uaac member add pks.clusters.admin pksadmin
+	exit 0
 fi
+	echo "I am a plugin named kubectl-foo"
 
-echo "I am a plugin named kubectl-foo"
 
