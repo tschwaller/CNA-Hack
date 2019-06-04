@@ -1,6 +1,10 @@
 #!/bin/bash
 
-brew install jq
+#1 = uaac
+#2 = adduser
+#3 = opsman.corp.local
+#brew install jq
+shopt -s extglob
 sudo apt-get install jq
 # optional argument handling
 if [[ "$1" == "login" ]]
@@ -15,17 +19,22 @@ then
     pks clusters
     exit 0
 fi
-
-if [[ "$1" == "uuac" && "$2" = "adduser" ]]
+if [[ "$1" == "uaac" && "$2" = "adduser" ]]
 then
-	uaac target $3
-	uaac token owner get opsman -s ""
-	auth_secret=$( curl -k  “https://opsman.flhrnet.local/api/v0/deployed/director/credentials/uaa_admin_user_credentials” -X GET -H “Authorization: Bearer <Authorization Token>”  | jq '.secret' ) 
-	uaac token client get admin -s $auth_secret
-	uaac user add pksadmin --emails $4 -p $5
-	uaac member add pks.clusters.admin pksadmin
-	exit 0
+        uaac target https://$3/uaa --skip-ssl-validation
+        uaac token owner get opsman -s ""
+        uaac context
+        output=$(uaac context)
+        access_token=$(uaac context | sed -n 's/access_token: \(.*\)/\1/p')
+        access_no_space="${access_token##*( )}"
+        echo $access_no_space
+        curl -k  https://$3/api/v0/deployed/director/credentials/uaa_admin_user_credentials -X GET -H "Authorization: Bearer $access_no_space"
+        auth_secret=$(curl -k  https://$3/api/v0/deployed/director/credentials/uaa_admin_user_credentials -X GET -H "Authorization: Bearer $access_no_space"  | jq .credential.value.password )
+        echo $auth_secret
+        uaac token client get admin -s $auth_secret
+        uaac user add pksadmin --emails pksadmin@corp.local -p VMware1!
+        uaac member add pks.clusters.admin pksadmin
+        echo $auth_secret
+         exit 0
 fi
-	echo "I am a plugin named kubectl-foo"
-
-
+        echo "I am a plugin named kubectl-foo"
